@@ -2,7 +2,7 @@
 //it's totally free to use
 //Github: Paulo-Henrique-Silva
 
-//the game is working, but just for one word
+//a few visual changes were made
 
 #include <stdio.h>
 #include <conio.h>
@@ -12,20 +12,24 @@
 
 FILE *pWords; //this will contain the words
 
-char word[35] = {"HANGMAN GAME"}; 
+char word[100] = {"HARRY POTTER AND THE PHILOSOPHERS STONE"}; 
 
 void refreshHanged(int wrongGuesses);
 void refreshWord(char rightLetters[]);
+void showWrong_letters(char wrongLetters[]); 
+
 char isValid_letter(char letter, char rightLetters[], char wrongLetters[]); 
+
 int isThere_theLetter(char letter);
 int isVictory(char rightLetters[]);
-//fuctions prototypes
+//functions prototypes
 
 int main()
 {
     char letter = ' ';
-    char rightLetters[26]; 
-    char wrongLetters[26];
+
+    char rightLetters[26] = {'\0'}; 
+    char wrongLetters[26] = {'\0'};
     //contais the user guesses
 
     int wrongGuesses = 0; 
@@ -33,6 +37,7 @@ int main()
 
     refreshHanged(wrongGuesses);    
     refreshWord(rightLetters); 
+    showWrong_letters(wrongLetters);
     //shows the word and the draw for the first time
 
     while(wrongGuesses < 6 && isVictory(rightLetters) == 0)
@@ -59,6 +64,7 @@ int main()
 
         refreshHanged(wrongGuesses);    
         refreshWord(rightLetters); 
+        showWrong_letters(wrongLetters);
         //refresh for each attempt
     } 
 
@@ -77,6 +83,9 @@ int main()
 
 void refreshHanged(int wrongGuesses)
 {
+    printf("\t\t\t\t\tHANGMAN GAME");
+    printf("\n\t\t------------------------------------------------------------");
+
     switch(wrongGuesses)
     {
         case 0:
@@ -129,13 +138,15 @@ void refreshHanged(int wrongGuesses)
             break;
         case 6:
             printf("\n\t\t\t\t\t|--------|");
-            printf("\n\t\t\t\t\t|        O");
+            printf("\n\t\t\t\t\t|      (;-;)");
             printf("\n\t\t\t\t\t|       /|\\");
             printf("\n\t\t\t\t\t|       / \\");
             printf("\n\t\t\t\t\t|           ");
             printf("\n\t\t\t\t\t|__________");
             break;
     }
+
+    printf("\n\t\t------------------------------------------------------------");
 }
 //this will refresh for each user wrong guess
 
@@ -166,26 +177,17 @@ void refreshWord(char rightLetters[])
 }
 //refresh the word for each attempt
 
-int isVictory(char rightLetters[])
+void showWrong_letters(char wrongLetters[])
 {
-    //the logic is similar to refreshWord()
-    int i, j;
+    printf("\n\nWrong Letters: "); 
 
-    for(i = 0; i < strlen(word); i++)
+    for(int i = 0; i < strlen(wrongLetters); i++)
     {
-        for(j = 0; j < strlen(rightLetters); j++)
-        {
-            if(word[i] == rightLetters[j])
-                break;
-        }
-
-        if(word[i] != rightLetters[j] && word[i] != ' ')
-            return 0; 
-            //if the letter is not in rightLetters array, it'll return FALSE
-            //it means that the game it's not over 
-    }
-
-    return 1;
+        if(i == 0)
+            printf("%c", wrongLetters[i]);
+        else
+            printf(" - %c", wrongLetters[i]);
+    } //to show like: A - B - C...
 }
 
 char isValid_letter(char letter, char rightLetters[], char wrongLetters[])
@@ -212,6 +214,28 @@ char isValid_letter(char letter, char rightLetters[], char wrongLetters[])
     }
 
     return letter; 
+}
+
+int isVictory(char rightLetters[])
+{
+    //the logic is similar to refreshWord()
+    int i, j;
+
+    for(i = 0; i < strlen(word); i++)
+    {
+        for(j = 0; j < strlen(rightLetters); j++)
+        {
+            if(word[i] == rightLetters[j])
+                break;
+        }
+
+        if(word[i] != rightLetters[j] && word[i] != ' ')
+            return 0; 
+            //if the letter is not in rightLetters array, it'll return FALSE
+            //it means that the game it's not over 
+    }
+
+    return 1;
 }
 
 int isThere_theLetter(char letter)
