@@ -2,10 +2,7 @@
 //it's totally free to use
 //Github: Paulo-Henrique-Silva
 
-//new words can be added and played in the game. Problems: 
-//if the user add a word that is equal to another word in word list, the program can't detect it
-//the program can't detect if the word is bigger than 50 chars
-//the "see word list" option does not work yet 
+//"see word list" option is working
 
 #include <stdio.h>
 #include <conio.h>
@@ -22,6 +19,7 @@ enum menu {play = 1, addWord, seeWords, exitGame};
 
 void playGame();
 void addA_word();
+void seeWord_list();
 
 void chooseA_randomWord();
 void createWord_list();
@@ -34,7 +32,7 @@ char isValid_letter(char letter, char rightLetters[], char wrongLetters[]);
 
 int isThere_theLetter(char letter);
 int isVictory(char rightLetters[]);
-int isA_validWord(char newWord[]);
+int isA_validWord(char typedWord[]);
 //functions prototypes
 
 int main()
@@ -61,6 +59,7 @@ int main()
                 addA_word();
                 break;
             case seeWords: 
+                seeWord_list();
                 break;
             case exitGame:
                 printf("\nExiting...");
@@ -134,6 +133,7 @@ void playGame()
 void addA_word()
 {
     char newWord[50] = {'\0'};
+    int i = 0;
 
     if(fopen(Fpath, "r") == NULL)
         createWord_list(); //if the file was deleted, it creates a new one.
@@ -141,12 +141,16 @@ void addA_word()
     do
     {
         system("cls");
-        printf("\nType a New Word: ");
-        scanf("%c"); //avoid \n
-        fgets(newWord, 50, stdin);
+        printf("\nType a new Word: ");
 
-        strupr(newWord); //lower case to upper case
-    } 
+        if(i == 0)
+        {
+            scanf("%c"); 
+            i++;
+        } //this avoid fgets get '\n'
+
+        fgets(newWord, 50, stdin);
+    }
     while(isA_validWord(newWord) == 0);
 
     pWords = fopen(Fpath, "a");
@@ -154,6 +158,28 @@ void addA_word()
     fclose(pWords); 
 
     printf("\nThe new Word was Successfully added!");
+}
+
+void seeWord_list()
+{
+    char wordIn_file[50]; //this will get the line
+    int i = 1;
+
+    if(fopen(Fpath, "r") == NULL)
+        createWord_list();
+
+    system("cls");
+
+    printf("\t\t\t\t\tWORD LIST");
+    printf("\n\t\t------------------------------------------------------------\n");
+
+    pWords = fopen(Fpath, "r");
+    while(fgets(wordIn_file, 50, pWords) != NULL) //NULL it's the end of file
+    {
+        printf("\t\t\t%d - %s", i, wordIn_file);
+        i++;
+    }
+    fclose(pWords);
 }
 
 void chooseA_randomWord()
@@ -370,20 +396,15 @@ int isThere_theLetter(char letter)
     return 0;
 }
 
-int isA_validWord(char newWord[])
+int isA_validWord(char typedWord[])
 {
     int i;
+    
+    strupr(typedWord);
 
-    if(strlen(newWord) > 50) //50 is the MAX of the variable word
+    for(i = 0; i < strlen(typedWord) - 1; i++)
     {
-        printf("\nInvalid Input. This word is too long. Type Again!");
-        getch();
-        return 0;
-    }
-
-    for(i = 0; i < strlen(newWord) - 1; i++)
-    {
-        if(newWord[i] != ' ' && (newWord[i] < 'A' || newWord[i] > 'Z')) //just allows spaces and alphabets
+        if(typedWord[i] != ' ' && (typedWord[i] < 'A' || typedWord[i] > 'Z')) //just allows spaces and alphabets
         {
             printf("\nInvalid Input. Please, just type Alphabet letters!");
             getch();
@@ -392,4 +413,4 @@ int isA_validWord(char newWord[])
     }
 
     return 1; //if any case matches, it means that word is valid and returns TRUE
-}
+} 
