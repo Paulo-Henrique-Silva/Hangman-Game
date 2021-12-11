@@ -2,7 +2,7 @@
 //it's totally free to use
 //Github: Paulo-Henrique-Silva
 
-//a few visual changes were made
+//menu update
 
 #include <stdio.h>
 #include <conio.h>
@@ -10,10 +10,13 @@
 #include <string.h>
 #include <ctype.h>
 
+
 FILE *pWords; //this will contain the words
+char word[50] = {"HARRY POTTER AND THE PHILOSOPHERS STONE"}; 
 
-char word[100] = {"HARRY POTTER AND THE PHILOSOPHERS STONE"}; 
+enum menu {play = 1, exitGame};
 
+void playGame();
 void refreshHanged(int wrongGuesses);
 void refreshWord(char rightLetters[]);
 void showWrong_letters(char wrongLetters[]); 
@@ -26,15 +29,46 @@ int isVictory(char rightLetters[]);
 
 int main()
 {
-    char letter = ' ';
+    int operation = 0;
 
+    while(operation != exitGame)
+    {
+        system("cls");
+        printf("\t\t\t\tHANGMAN GAME\n");
+        printf("\n\t\t\t\t[1] - Play Game");
+        printf("\n\t\t\t\t[2] - Exit");
+        printf("\n\nType your operation: ");
+        scanf("%d", &operation); 
+
+        switch(operation)
+        {
+            case play:
+                playGame();
+                break;
+            case exitGame:
+                printf("\nExiting...");
+                break;
+            default:
+                printf("\nInvalid Input!");
+                break;
+        }
+
+        getch(); //stops before closes it
+    }
+
+    return 0;
+}
+
+void playGame() 
+{
+    char letter = '\0';
     char rightLetters[26] = {'\0'}; 
     char wrongLetters[26] = {'\0'};
-    //contais the user guesses
 
     int wrongGuesses = 0; 
     int rightGuesses = 0;
 
+    system("cls");
     refreshHanged(wrongGuesses);    
     refreshWord(rightLetters); 
     showWrong_letters(wrongLetters);
@@ -76,9 +110,6 @@ int main()
         printf("\nYOU LOST :(");
     
     printf("\nAnswer = %s", word);
-
-    getch(); //stops before closes it
-    return 0;
 }
 
 void refreshHanged(int wrongGuesses)
