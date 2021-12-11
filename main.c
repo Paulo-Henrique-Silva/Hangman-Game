@@ -2,7 +2,9 @@
 //it's totally free to use
 //Github: Paulo-Henrique-Silva
 
-//randomly select a word from file
+//in this version, the user can adds new words to the word list
+//although this words are not choose when the game select a random word
+//and the "see word list" option does not work yet.
 
 #include <stdio.h>
 #include <conio.h>
@@ -11,13 +13,18 @@
 #include <ctype.h>
 #include <time.h>
 
-FILE *pWords; //this contain the words
+FILE *pWords; //this contains the words
+const char Fpath[10] = "words.txt";
 char word[50] = {'\0'}; 
 
-enum menu {play = 1, exitGame};
+enum menu {play = 1, addWord, seeWords, exitGame};
 
 void playGame();
+void addA_word();
+
 void chooseA_randomWord();
+void createWord_list();
+
 void refreshHanged(int wrongGuesses);
 void refreshWord(char rightLetters[]);
 void showWrong_letters(char wrongLetters[]); 
@@ -26,6 +33,7 @@ char isValid_letter(char letter, char rightLetters[], char wrongLetters[]);
 
 int isThere_theLetter(char letter);
 int isVictory(char rightLetters[]);
+int isA_validWord(char newWord[]);
 //functions prototypes
 
 int main()
@@ -37,7 +45,9 @@ int main()
         system("cls");
         printf("\t\t\t\tHANGMAN GAME\n");
         printf("\n\t\t\t\t[1] - Play Game");
-        printf("\n\t\t\t\t[2] - Exit");
+        printf("\n\t\t\t\t[2] - Add a New Word");
+        printf("\n\t\t\t\t[3] - Show Word List");
+        printf("\n\t\t\t\t[4] - Exit");
         printf("\n\nType your operation: ");
         scanf("%d", &operation); 
 
@@ -45,6 +55,11 @@ int main()
         {
             case play:
                 playGame();
+                break;
+            case addWord:
+                addA_word();
+                break;
+            case seeWords: 
                 break;
             case exitGame:
                 printf("\nExiting...");
@@ -71,7 +86,7 @@ void playGame()
 
     system("cls");
     chooseA_randomWord();
-    
+
     refreshHanged(wrongGuesses);    
     refreshWord(rightLetters); 
     showWrong_letters(wrongLetters);
@@ -115,28 +130,37 @@ void playGame()
     printf("\nAnswer = %s", word);
 }
 
+void addA_word()
+{
+    char newWord[50] = {'\0'};
+
+    if(fopen(Fpath, "r") == NULL)
+        createWord_list(); //if the file was deleted, create a new one.
+
+    do
+    {
+        system("cls");
+        printf("\nType a New Word: ");
+        scanf("%c"); //avoid \n
+        fgets(newWord, 50, stdin);
+
+        strupr(newWord); //lower case to upper case
+
+    } while(isA_validWord(newWord) == 0);
+
+    pWords = fopen(Fpath, "a");
+    fputs(newWord, pWords);
+    fclose(pWords); 
+
+    printf("\nThe new Word was Successfully added!");
+}
+
 void chooseA_randomWord()
 {
-    char Fpath[10] = "words.txt";
     int randomLine, i; 
 
     if(fopen(Fpath, "r") == NULL) 
-    {
-        pWords = fopen(Fpath, "w");
-
-        fputs("CLICK\n", pWords);
-        fputs("HARRY POTTER AND THE PHILOSOPHERS STONE\n", pWords);
-        fputs("THE LAST OF US\n", pWords);
-        fputs("INDIANA JONES AND THE LAST CRUSADE\n", pWords);
-        fputs("BRAZIL\n", pWords);
-        fputs("THE GODFATHER\n", pWords);
-        fputs("ASSASSINS CREED\n", pWords);
-        fputs("GRAND THEFT AUTO SAN ANDREAS\n", pWords);
-        fputs("UNITED STATES OF AMERICA\n", pWords);
-        fputs("MEXICO\n", pWords);
-
-        fclose(pWords); //put some words in a file
-    }
+        createWord_list();
 
     srand(time(0));
     randomLine = rand() % 11; //select a random line (0 - 10)
@@ -148,6 +172,26 @@ void chooseA_randomWord()
 
     word[strlen(word) - 1] = '\0'; //remove the \n char
 }
+
+void createWord_list()
+{
+    pWords = fopen(Fpath, "w");
+
+    fputs("CLICK\n", pWords);
+    fputs("HARRY POTTER AND THE PHILOSOPHERS STONE\n", pWords);
+    fputs("THE LAST OF US\n", pWords);
+    fputs("INDIANA JONES AND THE LAST CRUSADE\n", pWords);
+    fputs("BRAZIL\n", pWords);
+    fputs("THE GODFATHER\n", pWords);
+    fputs("ASSASSINS CREED\n", pWords);
+    fputs("GRAND THEFT AUTO SAN ANDREAS\n", pWords);
+    fputs("UNITED STATES OF AMERICA\n", pWords);
+    fputs("MEXICO\n", pWords);
+
+    fclose(pWords); 
+}
+//if the file doesn't exist, it will create a new one with a few words.
+//then the user can play the game 
 
 void refreshHanged(int wrongGuesses)
 {
@@ -315,4 +359,28 @@ int isThere_theLetter(char letter)
     }
 
     return 0;
+}
+
+int isA_validWord(char newWord[])
+{
+    int i;
+
+    if(strlen(newWord) > 50) //50 is the MAX of the variable word
+    {
+        printf("\nInvalid Input. This word is too long. Type Again!");
+        getch();
+        return 0;
+    }
+
+    for(i = 0; i < strlen(newWord) - 1; i++)
+    {
+        if(newWord[i] != ' ' && (newWord[i] < 'A' || newWord[i] > 'Z')) //just allows spaces and alphabets
+        {
+            printf("\nInvalid Input. Please, just type Alphabet letters!");
+            getch();
+            return 0;
+        }
+    }
+
+    return 1; //if any case matches, it means that word is valid and returns TRUE
 }
