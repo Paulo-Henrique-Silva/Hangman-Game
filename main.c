@@ -2,9 +2,10 @@
 //it's totally free to use
 //Github: Paulo-Henrique-Silva
 
-//in this version, the user can adds new words to the word list
-//although this words are not choose when the game select a random word
-//and the "see word list" option does not work yet.
+//new words can be added and played in the game. Problems: 
+//if the user add a word that is equal to another word in word list, the program can't detect it
+//the program can't detect if the word is bigger than 50 chars
+//the "see word list" option does not work yet 
 
 #include <stdio.h>
 #include <conio.h>
@@ -135,7 +136,7 @@ void addA_word()
     char newWord[50] = {'\0'};
 
     if(fopen(Fpath, "r") == NULL)
-        createWord_list(); //if the file was deleted, create a new one.
+        createWord_list(); //if the file was deleted, it creates a new one.
 
     do
     {
@@ -145,8 +146,8 @@ void addA_word()
         fgets(newWord, 50, stdin);
 
         strupr(newWord); //lower case to upper case
-
-    } while(isA_validWord(newWord) == 0);
+    } 
+    while(isA_validWord(newWord) == 0);
 
     pWords = fopen(Fpath, "a");
     fputs(newWord, pWords);
@@ -157,13 +158,21 @@ void addA_word()
 
 void chooseA_randomWord()
 {
-    int randomLine, i; 
+    int randomLine, i, amountOf_lines = 0; 
+    char tempBuffer[50];
 
     if(fopen(Fpath, "r") == NULL) 
         createWord_list();
 
+    pWords = fopen(Fpath, "r");
+    do 
+        amountOf_lines++;
+    while(fgets(tempBuffer, 50, pWords) != NULL);
+    fclose(pWords);
+    //checks how many lines(words) there are in the file
+
     srand(time(0));
-    randomLine = rand() % 11; //select a random line (0 - 10)
+    randomLine = rand() % amountOf_lines; //select a random line between 0 - amount of lines in file
 
     pWords = fopen(Fpath, "r");
     for(i = 0; i <= randomLine; i++)
@@ -191,7 +200,7 @@ void createWord_list()
     fclose(pWords); 
 }
 //if the file doesn't exist, it will create a new one with a few words.
-//then the user can play the game 
+//then the user can play the game
 
 void refreshHanged(int wrongGuesses)
 {
