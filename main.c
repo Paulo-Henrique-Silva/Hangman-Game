@@ -2,21 +2,22 @@
 //it's totally free to use
 //Github: Paulo-Henrique-Silva
 
-//menu update
+//randomly select a word from file
 
 #include <stdio.h>
 #include <conio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
-
-FILE *pWords; //this will contain the words
-char word[50] = {"HARRY POTTER AND THE PHILOSOPHERS STONE"}; 
+FILE *pWords; //this contain the words
+char word[50] = {'\0'}; 
 
 enum menu {play = 1, exitGame};
 
 void playGame();
+void chooseA_randomWord();
 void refreshHanged(int wrongGuesses);
 void refreshWord(char rightLetters[]);
 void showWrong_letters(char wrongLetters[]); 
@@ -69,6 +70,8 @@ void playGame()
     int rightGuesses = 0;
 
     system("cls");
+    chooseA_randomWord();
+    
     refreshHanged(wrongGuesses);    
     refreshWord(rightLetters); 
     showWrong_letters(wrongLetters);
@@ -110,6 +113,40 @@ void playGame()
         printf("\nYOU LOST :(");
     
     printf("\nAnswer = %s", word);
+}
+
+void chooseA_randomWord()
+{
+    char Fpath[10] = "words.txt";
+    int randomLine, i; 
+
+    if(fopen(Fpath, "r") == NULL) 
+    {
+        pWords = fopen(Fpath, "w");
+
+        fputs("CLICK\n", pWords);
+        fputs("HARRY POTTER AND THE PHILOSOPHERS STONE\n", pWords);
+        fputs("THE LAST OF US\n", pWords);
+        fputs("INDIANA JONES AND THE LAST CRUSADE\n", pWords);
+        fputs("BRAZIL\n", pWords);
+        fputs("THE GODFATHER\n", pWords);
+        fputs("ASSASSINS CREED\n", pWords);
+        fputs("GRAND THEFT AUTO SAN ANDREAS\n", pWords);
+        fputs("UNITED STATES OF AMERICA\n", pWords);
+        fputs("MEXICO\n", pWords);
+
+        fclose(pWords); //put some words in a file
+    }
+
+    srand(time(0));
+    randomLine = rand() % 11; //select a random line (0 - 10)
+
+    pWords = fopen(Fpath, "r");
+    for(i = 0; i <= randomLine; i++)
+            fgets(word, 50, pWords); //gets the word from the random line
+    fclose(pWords);
+
+    word[strlen(word) - 1] = '\0'; //remove the \n char
 }
 
 void refreshHanged(int wrongGuesses)
