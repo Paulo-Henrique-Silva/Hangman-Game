@@ -40,7 +40,7 @@ void addA_account();
 void chooseA_randomWord();
 void checkWords_data();
 void checkAccounts_data();
-int enterIn_anAccount(); 
+int logIn_anAccount(); 
 
 void refreshHanged(int wrongGuesses);
 void refreshWord(char rightLetters[]);
@@ -110,10 +110,10 @@ void playGame()
 
     int wrongGuesses = 0, rightGuesses = 0;
     
-    system("cls");
-
-    if(enterIn_anAccount() != 0)
+    if(logIn_anAccount() != 0)
     {
+        system("cls");
+
         chooseA_randomWord();
 
         refreshHanged(wrongGuesses);    
@@ -162,12 +162,11 @@ void playGame()
 
 void addA_account()
 {
-
     system("cls");
     printf("\t\t\t\t\tADDING ACCOUNT");
     printf("\n\t\t------------------------------------------------------------\n");
 
-    printf("\nType a Name to the new Account: "); 
+    printf("\nType a UserName to the new Account: "); 
     scanf("%c"); //avoid \n
     fgets(account.name, 25, stdin);
 
@@ -303,9 +302,12 @@ void checkAccounts_data()
 }
 //checks if ALL datas files exist. If don't, it'll remove all the files and create new ones
 
-int enterIn_anAccount()
+int logIn_anAccount()
 {
+    int lineNum = 0, i;
     char buffer[25];
+
+    system("cls");
 
     checkAccounts_data();
 
@@ -320,11 +322,54 @@ int enterIn_anAccount()
         fclose(pAccounts_passWords);
         return 0;
     }
-    //if the first line is empty, it means that it does not have an account yet 
-    //Or the files were deleted
 
     fclose(pAccounts_names);
     fclose(pAccounts_passWords);
+    //if the first line is empty, it means that it does not have an account yet 
+    //Or the files were deleted
+
+    printf("\nType your User name: "); 
+    scanf("%c");
+    fgets(account.name, 25, stdin);
+
+    pAccounts_names = fopen(namesF_path, "r");
+    while(fgets(buffer, 25, pAccounts_names) != NULL)
+    {
+        lineNum++;
+
+        if(strcmp(buffer, account.name) == 0)
+            break;  
+    }
+    fclose(pAccounts_names);
+    //search each file line to check if username exists
+
+    if(strcmp(buffer, account.name) != 0)
+    {
+        printf("\nSorry, this UserName does not exist.");
+        return 0;
+    }
+    else
+    {
+        printf("\nType Your PassWord: ");
+        fgets(account.password, 25, stdin);
+
+        pAccounts_passWords = fopen(passwordsF_path, "r");
+        for(i = 0; i < lineNum; i++)
+            fgets(buffer, 25, pAccounts_passWords);
+        fclose(pAccounts_passWords);
+        //if the username exists, there is a password in the same line number as username,
+        //in file passawords.
+        //Then, it'll search untill reachs the same line as the user name
+
+        if(strcmp(buffer, account.password) != 0)
+        {
+            printf("\nIncorret Password!");
+            return 0;
+        }
+    }
+
+    printf("\nSuccessfully loged in!");
+    getch();
     return 1;
 }
 //the user needs to enter in an account to play
@@ -332,8 +377,8 @@ int enterIn_anAccount()
 
 void refreshHanged(int wrongGuesses)
 {
-    printf("\t\t\t\t\tHANGMAN GAME");
-    printf("\n\t\t------------------------------------------------------------");
+    printf("\t\t\t\tHANGMAN GAME - Player: %s", account.name);
+    printf("\t\t------------------------------------------------------------");
 
     switch(wrongGuesses)
     {
