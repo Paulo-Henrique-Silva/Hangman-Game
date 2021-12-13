@@ -25,9 +25,10 @@ char word[50] = {'\0'};
 
 struct player
 {
-   char name[25], password[25];
+    int points;
+    char name[25], password[25];
 };
-struct player account; 
+struct player account;
 
 enum menu {play = 1, howToplay, addAccount, seeAccounts, addWord, seeWords, exitGame};
 
@@ -39,6 +40,7 @@ void addA_account();
 void chooseA_randomWord();
 void checkWords_data();
 void checkAccounts_data();
+int enterIn_anAccount(); 
 
 void refreshHanged(int wrongGuesses);
 void refreshWord(char rightLetters[]);
@@ -104,56 +106,58 @@ int main()
 void playGame() 
 {
     char letter = '\0';
-    char rightLetters[26] = {'\0'}; 
-    char wrongLetters[26] = {'\0'};
+    char rightLetters[26] = {'\0'}, wrongLetters[26] = {'\0'};
 
-    int wrongGuesses = 0; 
-    int rightGuesses = 0;
-
+    int wrongGuesses = 0, rightGuesses = 0;
+    
     system("cls");
-    chooseA_randomWord();
 
-    refreshHanged(wrongGuesses);    
-    refreshWord(rightLetters); 
-    showWrong_letters(wrongLetters);
-    //shows the word and the draw for the first time
-
-    while(wrongGuesses < 6 && isVictory(rightLetters) == 0)
+    if(enterIn_anAccount() != 0)
     {
-        printf("\n\nType a Letter: ");
-        scanf(" %c", &letter); 
-        letter = isValid_letter(letter, rightLetters, wrongLetters); 
-
-        if(isThere_theLetter(letter))
-        {
-            printf("Right guess! :)");
-            rightLetters[rightGuesses] = letter;
-            rightGuesses++;
-        }
-        else
-        {
-            printf("Wrong Guess :/");
-            wrongLetters[wrongGuesses] = letter;
-            wrongGuesses++;
-        }
-
-        getch(); //stops before clean
-        system("cls"); //cleans the screen
+        chooseA_randomWord();
 
         refreshHanged(wrongGuesses);    
         refreshWord(rightLetters); 
         showWrong_letters(wrongLetters);
-        //refresh for each attempt
-    } 
+        //shows the word and the draw for the first time
 
-    printf("\n\nEND GAME!");
+        while(wrongGuesses < 6 && isVictory(rightLetters) == 0)
+        {
+            printf("\n\nType a Letter: ");
+            scanf(" %c", &letter); 
+            letter = isValid_letter(letter, rightLetters, wrongLetters); 
 
-    if(isVictory(rightLetters))
-        printf("\nVICTORY! :)");
-    else
-        printf("\nYOU LOST :(");
-    
-    printf("\nAnswer = %s", word);
+            if(isThere_theLetter(letter))
+            {
+                printf("Right guess! :)");
+                rightLetters[rightGuesses] = letter;
+                rightGuesses++;
+            }
+            else
+            {
+                printf("Wrong Guess :/");
+                wrongLetters[wrongGuesses] = letter;
+                wrongGuesses++;
+            }
+
+            getch(); //stops before clean
+            system("cls"); //cleans the screen
+
+            refreshHanged(wrongGuesses);    
+            refreshWord(rightLetters); 
+            showWrong_letters(wrongLetters);
+            //refresh for each attempt
+        } 
+
+        printf("\n\nEND GAME!");
+
+        if(isVictory(rightLetters))
+            printf("\nVICTORY! :)");
+        else
+            printf("\nYOU LOST :(");
+        
+        printf("\nAnswer = %s", word);
+    }
 }
 
 void addA_account()
@@ -298,6 +302,33 @@ void checkAccounts_data()
     }
 }
 //checks if ALL datas files exist. If don't, it'll remove all the files and create new ones
+
+int enterIn_anAccount()
+{
+    char buffer[25];
+
+    checkAccounts_data();
+
+    pAccounts_names = fopen(namesF_path, "r"); 
+    pAccounts_passWords = fopen(passwordsF_path, "r"); 
+
+    if(fgets(buffer, 25, pAccounts_names) == NULL || (fgets(buffer, 25, pAccounts_passWords) == NULL))
+    {
+        printf("\nSorry, it seems it does not have an Account yet or the Files were deleted :/");
+        printf("\nCreate a new Account to Play!");
+        fclose(pAccounts_names);
+        fclose(pAccounts_passWords);
+        return 0;
+    }
+    //if the first line is empty, it means that it does not have an account yet 
+    //Or the files were deleted
+
+    fclose(pAccounts_names);
+    fclose(pAccounts_passWords);
+    return 1;
+}
+//the user needs to enter in an account to play
+//if it returns 0, it means it was not possible to enter in an account
 
 void refreshHanged(int wrongGuesses)
 {
