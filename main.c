@@ -2,7 +2,7 @@
 //it's totally free to use
 //Github: Paulo-Henrique-Silva
 
-//"see word list" option is working
+//words can't repeat anymore
 
 #include <stdio.h>
 #include <conio.h>
@@ -399,10 +399,11 @@ int isThere_theLetter(char letter)
 int isA_validWord(char typedWord[])
 {
     int i;
+    char buffer[50];
     
     strupr(typedWord);
 
-    for(i = 0; i < strlen(typedWord) - 1; i++)
+    for(i = 0; i < strlen(typedWord) - 1; i++) //-1 because it has \n in last char
     {
         if(typedWord[i] != ' ' && (typedWord[i] < 'A' || typedWord[i] > 'Z')) //just allows spaces and alphabets
         {
@@ -411,6 +412,19 @@ int isA_validWord(char typedWord[])
             return 0;
         }
     }
+
+    pWords = fopen(Fpath, "r");
+    while(fgets(buffer, 50, pWords) != NULL)
+    {
+        if(strcmp(buffer, typedWord) == 0) //if it returns 0, it means that the words are equal
+        {
+            printf("\nInvalid Input. This word exist already!"); 
+            getch();
+            fclose(pWords);
+            return 0;
+        }
+    }
+    fclose(pWords);
 
     return 1; //if any case matches, it means that word is valid and returns TRUE
 } 
