@@ -2,7 +2,7 @@
 //it's totally free to use
 //Github: Paulo-Henrique-Silva
 
-//adding an account system
+//adding a points System
 
 #include <stdio.h>
 #include <conio.h>
@@ -14,11 +14,13 @@
 FILE 
 *pWords, 
 *pAccounts_names,
-*pAccounts_passWords;
+*pAccounts_passWords,
+*pAccounts_points;
 
 const char 
 wordsF_path[10] = "words.txt", 
 namesF_path[10] = "names.txt",
+pointsF_path[10] = "points.txt",
 passwordsF_path[14] = "passwords.txt";
 
 char word[50] = {'\0'}; 
@@ -39,12 +41,13 @@ void addA_account();
 
 void chooseA_randomWord();
 void checkWords_data();
-void checkAccounts_data();
+int checkAccounts_data();
 int logIn_anAccount(); 
 
 void refreshHanged(int wrongGuesses);
 void refreshWord(char rightLetters[]);
 void showWrong_letters(char wrongLetters[]); 
+void addPoints_toPlayer(int points); 
 
 char isValid_letter(char letter, char rightLetters[], char wrongLetters[]); 
 
@@ -108,7 +111,7 @@ void playGame()
     char letter = '\0';
     char rightLetters[26] = {'\0'}, wrongLetters[26] = {'\0'};
 
-    int wrongGuesses = 0, rightGuesses = 0;
+    int wrongGuesses = 0, rightGuesses = 0, pointsIn_play = 6;
     
     if(logIn_anAccount() != 0)
     {
@@ -149,14 +152,21 @@ void playGame()
             //refresh for each attempt
         } 
 
+        pointsIn_play = pointsIn_play - wrongGuesses;
+
         printf("\n\nEND GAME!");
 
         if(isVictory(rightLetters))
+        {
             printf("\nVICTORY! :)");
+            printf("\nPoints gained: %d", pointsIn_play);
+            addPoints_toPlayer(pointsIn_play); 
+        }
         else
             printf("\nYOU LOST :(");
         
         printf("\nAnswer = %s", word);
+
     }
 }
 
@@ -173,16 +183,21 @@ void addA_account()
     printf("\nType a PassWord: "); 
     fgets(account.password, 25, stdin);
 
+    account.points = 0; //it's a new account, then its points it will be equal 0
+
     checkAccounts_data();
 
     pAccounts_names = fopen(namesF_path, "a");
     pAccounts_passWords = fopen(passwordsF_path, "a");
+    pAccounts_points = fopen(pointsF_path, "a");
 
     fputs(account.name, pAccounts_names);
     fputs(account.password, pAccounts_passWords);
+    fprintf(pAccounts_points, "%d\n", account.points);
 
     fclose(pAccounts_names);
     fclose(pAccounts_passWords);
+    fclose(pAccounts_points);
     
     printf("\nNew Account Sucessfully Added!");
 }
@@ -287,90 +302,91 @@ void checkWords_data()
 //if the file doesn't exist, it will create a new one with a few words.
 //then the user can play the game
 
-void checkAccounts_data()
+int checkAccounts_data()
 {
-    if(fopen(namesF_path, "r") == NULL || fopen(passwordsF_path, "r") == NULL)
+    char nameIn_firstLine[25];
+
+    if
+    (
+        fopen(namesF_path, "r") == NULL || 
+        fopen(passwordsF_path, "r") == NULL ||
+        fopen(pointsF_path, "r") == NULL
+    )
     {
         pAccounts_names = fopen(namesF_path, "w");
         pAccounts_passWords = fopen(passwordsF_path, "w");
+        pAccounts_points = fopen(pointsF_path, "w"); 
         //the files are connect, they don't make sense if one is missing.
         //then, they need to be recreated
 
         fclose(pAccounts_names);
         fclose(pAccounts_passWords);
-    }
-}
-//checks if ALL datas files exist. If don't, it'll remove all the files and create new ones
+        fclose(pAccounts_points);
 
-int logIn_anAccount()
-{
-    int lineNum = 0, i;
-    char buffer[25];
-
-    system("cls");
-
-    checkAccounts_data();
-
-    pAccounts_names = fopen(namesF_path, "r"); 
-    pAccounts_passWords = fopen(passwordsF_path, "r"); 
-
-    if(fgets(buffer, 25, pAccounts_names) == NULL || (fgets(buffer, 25, pAccounts_passWords) == NULL))
-    {
-        printf("\nSorry, it seems it does not have an Account yet or the Files were deleted :/");
-        printf("\nCreate a new Account to Play!");
-        fclose(pAccounts_names);
-        fclose(pAccounts_passWords);
         return 0;
     }
 
-    fclose(pAccounts_names);
-    fclose(pAccounts_passWords);
-    //if the first line is empty, it means that it does not have an account yet 
-    //Or the files were deleted
+    pAccounts_names = fopen(namesF_path, "r");
+    if(fgets(nameIn_firstLine, 25, pAccounts_names) == NULL)
+    {
+        fclose(pAccounts_names);
+        return 0;
+    }
+    //if the first line is empty. It means that it does not have an account yet
+
+    return 1;
+}
+//if it returns 1, it means there is data. Else it means that the files were deleted or are empties
+
+int logIn_anAccount()
+{
+    int pointsIn_file;
+    char nameIn_file[25], passWord_inFile[25];
+
+    system("cls");
+    if(checkAccounts_data() == 0) //if it is missing data
+    {
+        printf("\nSorry, it seems it does not have an Account yet or the Files were deleted :/");
+        printf("\nCreate a new Account to Play!");
+        return 0;
+    }
 
     printf("\nType your User name: "); 
     scanf("%c");
     fgets(account.name, 25, stdin);
+    printf("\nType Your PassWord: ");
+    fgets(account.password, 25, stdin);
 
-    pAccounts_names = fopen(namesF_path, "r");
-    while(fgets(buffer, 25, pAccounts_names) != NULL)
+    pAccounts_names = fopen(namesF_path, "r"); 
+    pAccounts_passWords = fopen(passwordsF_path, "r"); 
+    pAccounts_points = fopen(pointsF_path, "r");
+
+    while
+    (
+        fgets(nameIn_file, 25, pAccounts_names) != NULL &&
+        fgets(passWord_inFile, 25, pAccounts_passWords) != NULL &&
+        fscanf(pAccounts_points, "%d\n", &pointsIn_file) != EOF
+    )
     {
-        lineNum++;
-
-        if(strcmp(buffer, account.name) == 0)
-            break;  
-    }
-    fclose(pAccounts_names);
-    //search each file line to check if username exists
-
-    if(strcmp(buffer, account.name) != 0)
-    {
-        printf("\nSorry, this UserName does not exist.");
-        return 0;
-    }
-    else
-    {
-        printf("\nType Your PassWord: ");
-        fgets(account.password, 25, stdin);
-
-        pAccounts_passWords = fopen(passwordsF_path, "r");
-        for(i = 0; i < lineNum; i++)
-            fgets(buffer, 25, pAccounts_passWords);
-        fclose(pAccounts_passWords);
-        //if the username exists, there is a password in the same line number as username,
-        //in file passawords.
-        //Then, it'll search untill reachs the same line as the user name
-
-        if(strcmp(buffer, account.password) != 0)
+        if(strcmp(nameIn_file, account.name) == 0 && strcmp(passWord_inFile, account.password) == 0)
         {
-            printf("\nIncorret Password!");
-            return 0;
+            printf("\nSuccessfully loged in!");
+            getch();
+
+            fclose(pAccounts_names);
+            fclose(pAccounts_passWords);
+            fclose(pAccounts_points);
+            return 1;
         }
     }
 
-    printf("\nSuccessfully loged in!");
-    getch();
-    return 1;
+    printf("\nSorry, it was not possible to find this account.");
+    printf("\nCheck the inputs!");
+
+    fclose(pAccounts_names);
+    fclose(pAccounts_passWords);
+    fclose(pAccounts_points);
+    return 0;
 }
 //the user needs to enter in an account to play
 //if it returns 0, it means it was not possible to enter in an account
@@ -482,6 +498,11 @@ void showWrong_letters(char wrongLetters[])
         else
             printf(" - %c", wrongLetters[i]);
     } //to show like: A - B - C...
+}
+
+void addPoints_toPlayer(int points)
+{
+
 }
 
 char isValid_letter(char letter, char rightLetters[], char wrongLetters[])
