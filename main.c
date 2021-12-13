@@ -2,7 +2,7 @@
 //it's totally free to use
 //Github: Paulo-Henrique-Silva
 
-//words can't repeat anymore
+//adding an account system
 
 #include <stdio.h>
 #include <conio.h>
@@ -11,18 +11,34 @@
 #include <ctype.h>
 #include <time.h>
 
-FILE *pWords; //this contains the words
-const char Fpath[10] = "words.txt";
+FILE 
+*pWords, 
+*pAccounts_names,
+*pAccounts_passWords;
+
+const char 
+wordsF_path[10] = "words.txt", 
+namesF_path[10] = "names.txt",
+passwordsF_path[14] = "passwords.txt";
+
 char word[50] = {'\0'}; 
 
-enum menu {play = 1, addWord, seeWords, exitGame};
+struct player
+{
+   char name[25], password[25];
+};
+struct player account; 
+
+enum menu {play = 1, howToplay, addAccount, seeAccounts, addWord, seeWords, exitGame};
 
 void playGame();
 void addA_word();
 void seeWord_list();
+void addA_account(); 
 
 void chooseA_randomWord();
-void createWord_list();
+void checkWords_data();
+void checkAccounts_data();
 
 void refreshHanged(int wrongGuesses);
 void refreshWord(char rightLetters[]);
@@ -44,9 +60,12 @@ int main()
         system("cls");
         printf("\t\t\t\tHANGMAN GAME\n");
         printf("\n\t\t\t\t[1] - Play Game");
-        printf("\n\t\t\t\t[2] - Add a New Word");
-        printf("\n\t\t\t\t[3] - Show Word List");
-        printf("\n\t\t\t\t[4] - Exit");
+        printf("\n\t\t\t\t[2] - How To Play");
+        printf("\n\t\t\t\t[3] - Add an account");
+        printf("\n\t\t\t\t[4] - Show Accounts");
+        printf("\n\t\t\t\t[5] - Add a Word");
+        printf("\n\t\t\t\t[6] - Show Word List");
+        printf("\n\t\t\t\t[7] - Exit");
         printf("\n\nType your operation: ");
         scanf("%d", &operation); 
 
@@ -54,6 +73,13 @@ int main()
         {
             case play:
                 playGame();
+                break;
+            case howToplay:
+                break;
+            case addAccount:
+                addA_account();
+                break;
+            case seeAccounts:
                 break;
             case addWord:
                 addA_word();
@@ -130,17 +156,46 @@ void playGame()
     printf("\nAnswer = %s", word);
 }
 
+void addA_account()
+{
+
+    system("cls");
+    printf("\t\t\t\t\tADDING ACCOUNT");
+    printf("\n\t\t------------------------------------------------------------\n");
+
+    printf("\nType a Name to the new Account: "); 
+    scanf("%c"); //avoid \n
+    fgets(account.name, 25, stdin);
+
+    printf("\nType a PassWord: "); 
+    fgets(account.password, 25, stdin);
+
+    checkAccounts_data();
+
+    pAccounts_names = fopen(namesF_path, "a");
+    pAccounts_passWords = fopen(passwordsF_path, "a");
+
+    fputs(account.name, pAccounts_names);
+    fputs(account.password, pAccounts_passWords);
+
+    fclose(pAccounts_names);
+    fclose(pAccounts_passWords);
+    
+    printf("\nNew Account Sucessfully Added!");
+}
+
 void addA_word()
 {
     char newWord[50] = {'\0'};
     int i = 0;
 
-    if(fopen(Fpath, "r") == NULL)
-        createWord_list(); //if the file was deleted, it creates a new one.
+    checkWords_data();
 
     do
     {
         system("cls");
+        printf("\t\t\t\t\tADDING A WORD");
+        printf("\n\t\t------------------------------------------------------------\n");
         printf("\nType a new Word: ");
 
         if(i == 0)
@@ -153,7 +208,7 @@ void addA_word()
     }
     while(isA_validWord(newWord) == 0);
 
-    pWords = fopen(Fpath, "a");
+    pWords = fopen(wordsF_path, "a");
     fputs(newWord, pWords);
     fclose(pWords); 
 
@@ -165,15 +220,14 @@ void seeWord_list()
     char wordIn_file[50]; //this will get the line
     int i = 1;
 
-    if(fopen(Fpath, "r") == NULL)
-        createWord_list();
+    checkWords_data();
 
     system("cls");
 
     printf("\t\t\t\t\tWORD LIST");
     printf("\n\t\t------------------------------------------------------------\n");
 
-    pWords = fopen(Fpath, "r");
+    pWords = fopen(wordsF_path, "r");
     while(fgets(wordIn_file, 50, pWords) != NULL) //NULL it's the end of file
     {
         printf("\t\t\t%d - %s", i, wordIn_file);
@@ -187,10 +241,9 @@ void chooseA_randomWord()
     int randomLine, i, amountOf_lines = 0; 
     char tempBuffer[50];
 
-    if(fopen(Fpath, "r") == NULL) 
-        createWord_list();
+    checkWords_data();
 
-    pWords = fopen(Fpath, "r");
+    pWords = fopen(wordsF_path, "r");
     do 
         amountOf_lines++;
     while(fgets(tempBuffer, 50, pWords) != NULL);
@@ -200,7 +253,7 @@ void chooseA_randomWord()
     srand(time(0));
     randomLine = rand() % amountOf_lines; //select a random line between 0 - amount of lines in file
 
-    pWords = fopen(Fpath, "r");
+    pWords = fopen(wordsF_path, "r");
     for(i = 0; i <= randomLine; i++)
             fgets(word, 50, pWords); //gets the word from the random line
     fclose(pWords);
@@ -208,25 +261,43 @@ void chooseA_randomWord()
     word[strlen(word) - 1] = '\0'; //remove the \n char
 }
 
-void createWord_list()
+void checkWords_data()
 {
-    pWords = fopen(Fpath, "w");
+    if(fopen(wordsF_path, "r") == NULL)
+    {
+        pWords = fopen(wordsF_path, "w");
 
-    fputs("CLICK\n", pWords);
-    fputs("HARRY POTTER AND THE PHILOSOPHERS STONE\n", pWords);
-    fputs("THE LAST OF US\n", pWords);
-    fputs("INDIANA JONES AND THE LAST CRUSADE\n", pWords);
-    fputs("BRAZIL\n", pWords);
-    fputs("THE GODFATHER\n", pWords);
-    fputs("ASSASSINS CREED\n", pWords);
-    fputs("GRAND THEFT AUTO SAN ANDREAS\n", pWords);
-    fputs("UNITED STATES OF AMERICA\n", pWords);
-    fputs("MEXICO\n", pWords);
+        fputs("CLICK\n", pWords);
+        fputs("HARRY POTTER AND THE PHILOSOPHERS STONE\n", pWords);
+        fputs("THE LAST OF US\n", pWords);
+        fputs("INDIANA JONES AND THE LAST CRUSADE\n", pWords);
+        fputs("BRAZIL\n", pWords);
+        fputs("THE GODFATHER\n", pWords);
+        fputs("ASSASSINS CREED\n", pWords);
+        fputs("GRAND THEFT AUTO SAN ANDREAS\n", pWords);
+        fputs("UNITED STATES OF AMERICA\n", pWords);
+        fputs("MEXICO\n", pWords);
 
-    fclose(pWords); 
+        fclose(pWords); 
+    } 
 }
 //if the file doesn't exist, it will create a new one with a few words.
 //then the user can play the game
+
+void checkAccounts_data()
+{
+    if(fopen(namesF_path, "r") == NULL || fopen(passwordsF_path, "r") == NULL)
+    {
+        pAccounts_names = fopen(namesF_path, "w");
+        pAccounts_passWords = fopen(passwordsF_path, "w");
+        //the files are connect, they don't make sense if one is missing.
+        //then, they need to be recreated
+
+        fclose(pAccounts_names);
+        fclose(pAccounts_passWords);
+    }
+}
+//checks if ALL datas files exist. If don't, it'll remove all the files and create new ones
 
 void refreshHanged(int wrongGuesses)
 {
@@ -413,7 +484,7 @@ int isA_validWord(char typedWord[])
         }
     }
 
-    pWords = fopen(Fpath, "r");
+    pWords = fopen(wordsF_path, "r");
     while(fgets(buffer, 50, pWords) != NULL)
     {
         if(strcmp(buffer, typedWord) == 0) //if it returns 0, it means that the words are equal
