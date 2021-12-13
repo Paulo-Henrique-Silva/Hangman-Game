@@ -20,7 +20,7 @@ FILE
 const char 
 wordsF_path[10] = "words.txt", 
 namesF_path[10] = "names.txt",
-pointsF_path[10] = "points.txt",
+pointsF_path[11] = "points.txt",
 passwordsF_path[14] = "passwords.txt";
 
 char word[50] = {'\0'}; 
@@ -340,7 +340,7 @@ int checkAccounts_data()
 
 int logIn_anAccount()
 {
-    int pointsIn_file;
+    int pointsIn_file = 0;
     char nameIn_file[25], passWord_inFile[25];
 
     system("cls");
@@ -359,13 +359,11 @@ int logIn_anAccount()
 
     pAccounts_names = fopen(namesF_path, "r"); 
     pAccounts_passWords = fopen(passwordsF_path, "r"); 
-    pAccounts_points = fopen(pointsF_path, "r");
 
     while
     (
         fgets(nameIn_file, 25, pAccounts_names) != NULL &&
-        fgets(passWord_inFile, 25, pAccounts_passWords) != NULL &&
-        fscanf(pAccounts_points, "%d\n", &pointsIn_file) != EOF
+        fgets(passWord_inFile, 25, pAccounts_passWords) != NULL
     )
     {
         if(strcmp(nameIn_file, account.name) == 0 && strcmp(passWord_inFile, account.password) == 0)
@@ -379,13 +377,13 @@ int logIn_anAccount()
             return 1;
         }
     }
+    //search in each line to find the typed account 
 
     printf("\nSorry, it was not possible to find this account.");
     printf("\nCheck the inputs!");
 
     fclose(pAccounts_names);
     fclose(pAccounts_passWords);
-    fclose(pAccounts_points);
     return 0;
 }
 //the user needs to enter in an account to play
@@ -500,9 +498,51 @@ void showWrong_letters(char wrongLetters[])
     } //to show like: A - B - C...
 }
 
-void addPoints_toPlayer(int points)
+void addPoints_toPlayer(int points) //this function does not work yet
 {
+    FILE *pTemp_file;
+    int lineNum = 0, oldPoints, newPoints, pointsIn_file, i;
+    char nameIn_file[25]; 
+    
+    pAccounts_names = fopen(namesF_path, "r");
+    while(fgets(nameIn_file, 25, pAccounts_names) != NULL)
+    {
+        lineNum++;
 
+        if(strcmp(nameIn_file, account.name) == 0)
+            break;
+    }
+    fclose(pAccounts_names);
+
+    pAccounts_points = fopen(pointsF_path, "r");
+    pTemp_file = fopen("temp.txt", "w");
+
+    while(pointsIn_file != EOF)
+    {  
+        i++;
+
+        if(i == lineNum)
+        {
+            oldPoints = getw(pAccounts_points);
+            newPoints = oldPoints + points;
+            putw(newPoints, pTemp_file);
+        }
+        else
+        {
+            pointsIn_file = getw(pAccounts_points);
+
+            if(pointsIn_file != EOF)
+                putw(pointsIn_file, pTemp_file);
+        }
+    }
+
+    fclose(pAccounts_points);
+    fclose(pTemp_file);
+
+    remove(pointsF_path);
+    rename("temp.txt", pointsF_path);
+    //-> bug: both functions dont work
+   
 }
 
 char isValid_letter(char letter, char rightLetters[], char wrongLetters[])
