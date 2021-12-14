@@ -2,7 +2,7 @@
 //it's totally free to use
 //Github: Paulo-Henrique-Silva
 
-//adding a points System
+//show accounts update
 
 #include <stdio.h>
 #include <conio.h>
@@ -40,6 +40,7 @@ void playGame();
 void addA_word();
 void seeWord_list();
 void addA_account(); 
+void showAccounts(); 
 
 void chooseA_randomWord();
 void checkWords_data();
@@ -87,6 +88,7 @@ int main()
                 addA_account();
                 break;
             case seeAccounts:
+                showAccounts();
                 break;
             case addWord:
                 addA_word();
@@ -204,6 +206,36 @@ void addA_account()
     printf("\nNew Account Sucessfully Added!");
 }
 
+void showAccounts()
+{
+    char nameIn_file[25];
+    int pointsIn_file, i = 0; 
+
+    system("cls"); 
+
+    printf("\t\t\t\t\tACCOUNTS");
+    printf("\n\t\t------------------------------------------------------------");
+
+    pAccounts_names = fopen(namesF_path, "r");
+    pAccounts_points = fopen(pointsF_path, "r"); 
+
+    while
+    (
+        fgets(nameIn_file, 25, pAccounts_names) != NULL && 
+        fscanf(pAccounts_points, "%d", &pointsIn_file) != EOF
+    )
+    {
+        i++;
+        nameIn_file[strlen(nameIn_file) - 1] = '\0'; //remove \n of last char
+
+        printf("\n\t\t\t NUMBER: %d - NAME: %s - POINTS: %d ", i, nameIn_file, pointsIn_file);
+        printf("\n\t\t------------------------------------------------------------");
+    }
+
+    fclose(pAccounts_names);
+    fclose(pAccounts_points);
+}
+
 void addA_word()
 {
     char newWord[50] = {'\0'};
@@ -211,28 +243,23 @@ void addA_word()
 
     checkWords_data();
 
-    do
+    system("cls");
+    printf("\t\t\t\t\tADDING A WORD");
+    printf("\n\t\t------------------------------------------------------------\n");
+
+
+    printf("\nType a new Word: ");
+    scanf("%c"); //avoid \n
+    fgets(newWord, 50, stdin);
+
+    if(isA_validWord(newWord))
     {
-        system("cls");
-        printf("\t\t\t\t\tADDING A WORD");
-        printf("\n\t\t------------------------------------------------------------\n");
-        printf("\nType a new Word: ");
+        pWords = fopen(wordsF_path, "a");
+        fputs(newWord, pWords);
+        fclose(pWords); 
 
-        if(i == 0)
-        {
-            scanf("%c"); 
-            i++;
-        } //this avoid fgets get '\n'
-
-        fgets(newWord, 50, stdin);
+        printf("\nThe new Word was Successfully added!");
     }
-    while(isA_validWord(newWord) == 0);
-
-    pWords = fopen(wordsF_path, "a");
-    fputs(newWord, pWords);
-    fclose(pWords); 
-
-    printf("\nThe new Word was Successfully added!");
 }
 
 void seeWord_list()
@@ -361,6 +388,10 @@ int logIn_anAccount()
     char nameIn_file[25], passWord_inFile[25];
 
     system("cls");
+    
+    printf("\t\t\t\t\tLOGIN");
+    printf("\n\t\t------------------------------------------------------------\n");
+
     if(checkAccounts_data() == 0) //if it is missing data
     {
         printf("\nSorry, it seems it does not have an Account yet or the Files were deleted :/");
@@ -624,7 +655,6 @@ int isA_validWord(char typedWord[])
         if(typedWord[i] != ' ' && (typedWord[i] < 'A' || typedWord[i] > 'Z')) //just allows spaces and alphabets
         {
             printf("\nInvalid Input. Please, just type Alphabet letters!");
-            getch();
             return 0;
         }
     }
@@ -635,7 +665,6 @@ int isA_validWord(char typedWord[])
         if(strcmp(buffer, typedWord) == 0) //if it returns 0, it means that the words are equal
         {
             printf("\nInvalid Input. This word exist already!"); 
-            getch();
             fclose(pWords);
             return 0;
         }
