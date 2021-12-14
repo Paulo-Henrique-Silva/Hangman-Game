@@ -168,7 +168,6 @@ void playGame()
             printf("\nYOU LOST :(");
         
         printf("\nAnswer = %s", word);
-
     }
 }
 
@@ -284,8 +283,12 @@ void chooseA_randomWord()
 
 void checkWords_data()
 {
-    if(fopen(wordsF_path, "r") == NULL)
+    pWords = fopen(wordsF_path, "r"); 
+
+    if(pWords == NULL)
     {
+        fclose(pWords); 
+
         pWords = fopen(wordsF_path, "w");
 
         fputs("CLICK\n", pWords);
@@ -298,28 +301,41 @@ void checkWords_data()
         fputs("GRAND THEFT AUTO SAN ANDREAS\n", pWords);
         fputs("UNITED STATES OF AMERICA\n", pWords);
         fputs("MEXICO\n", pWords);
-
-        fclose(pWords); 
     } 
+
+    fclose(pWords); 
 }
 //if the file doesn't exist, it will create a new one with a few words.
 //then the user can play the game
 
 int checkAccounts_data()
-{
-    char nameIn_firstLine[25];
+{ 
+    char nameIn_firstLine[25], passWord_Infirstline[25];
+    int pointsIn_firstLine; 
+
+    pAccounts_names = fopen(namesF_path, "r");
+    pAccounts_passWords = fopen(passwordsF_path, "r");
+    pAccounts_points = fopen(pointsF_path, "r"); 
 
     if
     (
-        fopen(namesF_path, "r") == NULL || 
-        fopen(passwordsF_path, "r") == NULL ||
-        fopen(pointsF_path, "r") == NULL
+        pAccounts_names == NULL || 
+        pAccounts_passWords == NULL ||
+        pAccounts_points == NULL ||
+        fgets(nameIn_firstLine, 25, pAccounts_names) == NULL ||
+        fgets(passWord_Infirstline, 25, pAccounts_passWords) == NULL ||
+        fscanf(pAccounts_points, "%d", &pointsIn_firstLine) == EOF
     )
     {
+        fclose(pAccounts_names);
+        fclose(pAccounts_passWords);
+        fclose(pAccounts_points);
+
         pAccounts_names = fopen(namesF_path, "w");
         pAccounts_passWords = fopen(passwordsF_path, "w");
         pAccounts_points = fopen(pointsF_path, "w"); 
         //the files are connect, they don't make sense if one is missing.
+        //or one is empty
         //then, they need to be recreated
 
         fclose(pAccounts_names);
@@ -328,17 +344,14 @@ int checkAccounts_data()
 
         return 0;
     }
-
-    pAccounts_names = fopen(namesF_path, "r");
-    if(fgets(nameIn_firstLine, 25, pAccounts_names) == NULL)
+    else 
     {
         fclose(pAccounts_names);
-        return 0;
+        fclose(pAccounts_passWords);
+        fclose(pAccounts_points);
+
+        return 1;
     }
-    //if the first line is empty. It means that it does not have an account yet
-    
-    fclose(pAccounts_names);
-    return 1;
 }
 //if it returns 1, it means there is data. Else it means that the files were deleted or are empties
 
@@ -514,7 +527,8 @@ void addPoints_toPlayer(int points) //this function does not work yet
         if(strcmp(nameIn_file, account.name) == 0)
             break;
     }
-    fclose(pAccounts_names);
+    fclose(pAccounts_names); 
+    //finds the line num of the user in file 
 
     pAccounts_points = fopen(pointsF_path, "r");
     pTemp_file = fopen(tempF_path, "w");
@@ -524,23 +538,19 @@ void addPoints_toPlayer(int points) //this function does not work yet
         i++; 
 
         if(i == lineNum)
-        {
-            printf("\npoints in file: %d", pointsIn_file);
             fprintf(pTemp_file, "%d\n", pointsIn_file + points);
-        }
         else if(pointsIn_file != EOF)
-        {
-            printf("\npoints in file: %d", pointsIn_file);
             fprintf(pTemp_file, "%d\n", pointsIn_file);
-        }   
     } 
+    //creates a second file, copy and paste the content.
+    //when reaches the user line, it'll add their points in play
     
     fclose(pAccounts_points);
-    fclose(pTemp_file);
+    fclose(pTemp_file);   
 
-    printf("\nremove = %d", remove(pointsF_path));
-    printf("\nrename = %d", rename(tempF_path, pointsF_path));
-    //-> bug: both functions dont work   
+    remove(pointsF_path);
+    rename(tempF_path, pointsF_path);
+    //delete the old file and rename the new one with the new points
 }
 
 char isValid_letter(char letter, char rightLetters[], char wrongLetters[])
