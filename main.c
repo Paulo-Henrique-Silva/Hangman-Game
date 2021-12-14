@@ -2,8 +2,6 @@
 //it's totally free to use
 //Github: Paulo-Henrique-Silva
 
-//show accounts update
-
 #include <stdio.h>
 #include <conio.h>
 #include <stdlib.h>
@@ -31,6 +29,7 @@ struct player
 {
     char name[25], password[25];
 };
+
 struct player account;
 
 enum menu {play = 1, howToplay, addAccount, seeAccounts, addWord, seeWords, exitGame};
@@ -40,6 +39,7 @@ void addA_word();
 void seeWord_list();
 void addA_account(); 
 void showAccounts(); 
+//game options
 
 void chooseA_randomWord();
 void checkWords_data();
@@ -57,7 +57,6 @@ int isThere_theLetter(char letter);
 int isVictory(char rightLetters[]);
 int isA_validWord(char typedWord[]);
 int isA_validName(char name[]); 
-//functions prototypes
 
 int main()
 {
@@ -117,16 +116,15 @@ void playGame()
 
     int wrongGuesses = 0, rightGuesses = 0, pointsIn_play = 6;
     
-    if(logIn_anAccount() != 0)
+    if(logIn_anAccount())
     {
         system("cls");
-
         chooseA_randomWord();
 
         refreshHanged(wrongGuesses);    
         refreshWord(rightLetters); 
         showWrong_letters(wrongLetters);
-        //shows the word and the draw for the first time
+        //shows the word and the draw just for the first time
 
         while(wrongGuesses < 6 && isVictory(rightLetters) == 0)
         {
@@ -157,6 +155,7 @@ void playGame()
         } 
 
         pointsIn_play = pointsIn_play - wrongGuesses;
+        //calculates the player score
 
         printf("\n\nEND GAME!");
 
@@ -179,7 +178,7 @@ void addA_account()
     printf("\t\t\t\t\tADDING ACCOUNT");
     printf("\n\t\t------------------------------------------------------------\n");
 
-    scanf("%c"); //avoid \n
+    scanf("%c"); //avoid extra \n
 
     printf("\nType a UserName to the new Account: "); 
     fgets(account.name, 25, stdin);
@@ -187,7 +186,8 @@ void addA_account()
     printf("\nType a PassWord: "); 
     fgets(account.password, 25, stdin);
 
-    checkAccounts_data();
+    checkAccounts_data(); 
+    //how it's adding an account, there is not need to block if the files were deleted or empty
 
     if(isA_validName(account.name))
     {
@@ -211,32 +211,54 @@ void addA_account()
 
 void showAccounts()
 {
-    char nameIn_file[25];
-    int pointsIn_file, i = 0; 
+    char nameIn_file[25], bestPlayer[25];
+    int pointsIn_file, i = 0, bestScore; 
 
     system("cls"); 
 
     printf("\t\t\t\t\tACCOUNTS");
     printf("\n\t\t------------------------------------------------------------");
 
-    pAccounts_names = fopen(namesF_path, "r");
-    pAccounts_points = fopen(pointsF_path, "r"); 
-
-    while
-    (
-        fgets(nameIn_file, 25, pAccounts_names) != NULL && 
-        fscanf(pAccounts_points, "%d", &pointsIn_file) != EOF
-    )
+    if(checkAccounts_data()) //checks if the files are ok and there is at least one account
     {
-        i++;
-        nameIn_file[strlen(nameIn_file) - 1] = '\0'; //remove \n of last char
+        pAccounts_names = fopen(namesF_path, "r");
+        pAccounts_points = fopen(pointsF_path, "r"); 
 
-        printf("\n\t\t\t NUMBER: %d - NAME: %s - POINTS: %d ", i, nameIn_file, pointsIn_file);
-        printf("\n\t\t------------------------------------------------------------");
+        while
+        (
+            fgets(nameIn_file, 25, pAccounts_names) != NULL && 
+            fscanf(pAccounts_points, "%d", &pointsIn_file) != EOF
+        )
+        {
+            i++;
+            nameIn_file[strlen(nameIn_file) - 1] = '\0'; //remove \n of last char
+
+            printf("\n\t\t\t NUMBER: %d - NAME: %s - POINTS: %d ", i, nameIn_file, pointsIn_file);
+            printf("\n\t\t------------------------------------------------------------");
+
+            if(i == 1)
+            {
+                strcpy(bestPlayer, nameIn_file);
+                bestScore = pointsIn_file;
+            }
+
+            if(pointsIn_file > bestScore)
+            {
+                strcpy(bestPlayer, nameIn_file);
+                bestScore = pointsIn_file; 
+            }
+        }
+
+        fclose(pAccounts_names);
+        fclose(pAccounts_points);
+
+        printf("\n\nBest Player: '%s' - Score: %d", bestPlayer, bestScore);
     }
-
-    fclose(pAccounts_names);
-    fclose(pAccounts_points);
+    else
+    {
+        printf("\n\nSorry, it was not possible to see the Accounts. :/"); 
+        printf("\nMaybe the files were deleted or there is no Account yet");
+    }
 }
 
 void addA_word()
@@ -249,7 +271,6 @@ void addA_word()
     system("cls");
     printf("\t\t\t\t\tADDING A WORD");
     printf("\n\t\t------------------------------------------------------------\n");
-
 
     printf("\nType a new Word: ");
     scanf("%c"); //avoid \n
@@ -268,7 +289,7 @@ void addA_word()
 void seeWord_list()
 {
     char wordIn_file[50]; //this will get the line
-    int i = 1;
+    int i = 0;
 
     checkWords_data();
 
@@ -278,12 +299,12 @@ void seeWord_list()
     printf("\n\t\t------------------------------------------------------------\n");
 
     pWords = fopen(wordsF_path, "r");
-    while(fgets(wordIn_file, 50, pWords) != NULL) //NULL it's the end of file
+    while(fgets(wordIn_file, 50, pWords) != NULL) 
     {
-        printf("\t\t\t%d - %s", i, wordIn_file);
         i++;
+        printf("\t\t\t\t%d - %s", i, wordIn_file);
     }
-    fclose(pWords);
+    fclose(pWords); //reads each line and prints on screen
 }
 
 void chooseA_randomWord()
@@ -321,16 +342,16 @@ void checkWords_data()
 
         pWords = fopen(wordsF_path, "w");
 
-        fputs("CLICK\n", pWords);
-        fputs("HARRY POTTER AND THE PHILOSOPHERS STONE\n", pWords);
-        fputs("THE LAST OF US\n", pWords);
-        fputs("INDIANA JONES AND THE LAST CRUSADE\n", pWords);
-        fputs("BRAZIL\n", pWords);
-        fputs("THE GODFATHER\n", pWords);
-        fputs("ASSASSINS CREED\n", pWords);
-        fputs("GRAND THEFT AUTO SAN ANDREAS\n", pWords);
-        fputs("UNITED STATES OF AMERICA\n", pWords);
-        fputs("MEXICO\n", pWords);
+        fputs("GITHUB\n", pWords);
+        fputs("STACK OVERFLOW\n", pWords);
+        fputs("GIT\n", pWords);
+        fputs("C LANGUAGE\n", pWords);
+        fputs("PYTHON\n", pWords);
+        fputs("VS CODE\n", pWords);
+        fputs("HANGMAN GAME\n", pWords);
+        fputs("CODING\n", pWords);
+        fputs("PULL REQUEST\n", pWords);
+        fputs("PRINTF\n", pWords);
     } 
 
     fclose(pWords); 
@@ -548,43 +569,48 @@ void showWrong_letters(char wrongLetters[])
     } //to show like: A - B - C...
 }
 
-void addPoints_toPlayer(int points) //this function does not work yet
+void addPoints_toPlayer(int points) 
 {
     int lineNum = 0, pointsIn_file = 0, i = 0;
     char nameIn_file[25]; 
-    
-    pAccounts_names = fopen(namesF_path, "r");
-    while(fgets(nameIn_file, 25, pAccounts_names) != NULL)
-    {
-        lineNum++;
 
-        if(strcmp(nameIn_file, account.name) == 0)
-            break;
+    if(checkAccounts_data())
+    {
+        pAccounts_names = fopen(namesF_path, "r");
+        while(fgets(nameIn_file, 25, pAccounts_names) != NULL)
+        {
+            lineNum++;
+
+            if(strcmp(nameIn_file, account.name) == 0)
+                break;
+        }
+        fclose(pAccounts_names); 
+        //finds the line num of user in file 
+
+        pAccounts_points = fopen(pointsF_path, "r");
+        pTemp_file = fopen(tempF_path, "w");
+
+        while(fscanf(pAccounts_points, "%d", &pointsIn_file) != EOF)
+        {
+            i++; 
+
+            if(i == lineNum)
+                fprintf(pTemp_file, "%d\n", pointsIn_file + points);
+            else if(pointsIn_file != EOF)
+                fprintf(pTemp_file, "%d\n", pointsIn_file);
+        } 
+        //creates a second file, copy and paste the content.
+        //when reaches the user line, it'll add their points in play
+        
+        fclose(pAccounts_points);
+        fclose(pTemp_file);   
+
+        remove(pointsF_path);
+        rename(tempF_path, pointsF_path);
+        //deletes the old file and renames the new one with the new points
     }
-    fclose(pAccounts_names); 
-    //finds the line num of user in file 
-
-    pAccounts_points = fopen(pointsF_path, "r");
-    pTemp_file = fopen(tempF_path, "w");
-
-    while(fscanf(pAccounts_points, "%d", &pointsIn_file) != EOF)
-    {
-        i++; 
-
-        if(i == lineNum)
-            fprintf(pTemp_file, "%d\n", pointsIn_file + points);
-        else if(pointsIn_file != EOF)
-            fprintf(pTemp_file, "%d\n", pointsIn_file);
-    } 
-    //creates a second file, copy and paste the content.
-    //when reaches the user line, it'll add their points in play
-    
-    fclose(pAccounts_points);
-    fclose(pTemp_file);   
-
-    remove(pointsF_path);
-    rename(tempF_path, pointsF_path);
-    //deletes the old file and renames the new one with the new points
+    else
+        printf("\nERROR: It was not possible to add points to User."); 
 }
 
 char isValid_letter(char letter, char rightLetters[], char wrongLetters[])
