@@ -29,7 +29,6 @@ char word[50] = {'\0'};
 
 struct player
 {
-    int points;
     char name[25], password[25];
 };
 struct player account;
@@ -57,6 +56,7 @@ char isValid_letter(char letter, char rightLetters[], char wrongLetters[]);
 int isThere_theLetter(char letter);
 int isVictory(char rightLetters[]);
 int isA_validWord(char typedWord[]);
+int isA_validName(char name[]); 
 //functions prototypes
 
 int main()
@@ -187,23 +187,26 @@ void addA_account()
     printf("\nType a PassWord: "); 
     fgets(account.password, 25, stdin);
 
-    account.points = 0; //it's a new account, then its points it will be equal 0
-
     checkAccounts_data();
 
-    pAccounts_names = fopen(namesF_path, "a");
-    pAccounts_passWords = fopen(passwordsF_path, "a");
-    pAccounts_points = fopen(pointsF_path, "a");
+    if(isA_validName(account.name))
+    {
+        pAccounts_names = fopen(namesF_path, "a");
+        pAccounts_passWords = fopen(passwordsF_path, "a");
+        pAccounts_points = fopen(pointsF_path, "a");
 
-    fputs(account.name, pAccounts_names);
-    fputs(account.password, pAccounts_passWords);
-    fprintf(pAccounts_points, "%d\n", account.points);
+        fputs(account.name, pAccounts_names);
+        fputs(account.password, pAccounts_passWords);
+        fprintf(pAccounts_points, "%d\n", 0);
 
-    fclose(pAccounts_names);
-    fclose(pAccounts_passWords);
-    fclose(pAccounts_points);
-    
-    printf("\nNew Account Sucessfully Added!");
+        fclose(pAccounts_names);
+        fclose(pAccounts_passWords);
+        fclose(pAccounts_points);
+        
+        printf("\nNew Account Sucessfully Added!");
+    }
+    else
+        printf("\nInvalid Input. There is an account with this name already!");
 }
 
 void showAccounts()
@@ -388,7 +391,7 @@ int logIn_anAccount()
     char nameIn_file[25], passWord_inFile[25];
 
     system("cls");
-    
+
     printf("\t\t\t\t\tLOGIN");
     printf("\n\t\t------------------------------------------------------------\n");
 
@@ -559,7 +562,7 @@ void addPoints_toPlayer(int points) //this function does not work yet
             break;
     }
     fclose(pAccounts_names); 
-    //finds the line num of the user in file 
+    //finds the line num of user in file 
 
     pAccounts_points = fopen(pointsF_path, "r");
     pTemp_file = fopen(tempF_path, "w");
@@ -581,7 +584,7 @@ void addPoints_toPlayer(int points) //this function does not work yet
 
     remove(pointsF_path);
     rename(tempF_path, pointsF_path);
-    //delete the old file and rename the new one with the new points
+    //deletes the old file and renames the new one with the new points
 }
 
 char isValid_letter(char letter, char rightLetters[], char wrongLetters[])
@@ -662,7 +665,7 @@ int isA_validWord(char typedWord[])
     pWords = fopen(wordsF_path, "r");
     while(fgets(buffer, 50, pWords) != NULL)
     {
-        if(strcmp(buffer, typedWord) == 0) //if it returns 0, it means that the words are equal
+        if(strcmp(buffer, typedWord) == 0)
         {
             printf("\nInvalid Input. This word exist already!"); 
             fclose(pWords);
@@ -673,3 +676,22 @@ int isA_validWord(char typedWord[])
 
     return 1; //if any case matches, it means that word is valid and returns TRUE
 } 
+
+int isA_validName(char name[])
+{
+    char buffer[25];
+
+    pAccounts_names = fopen(namesF_path, "r");
+    while(fgets(buffer, 50, pAccounts_names) != NULL)
+    {
+        if(strcmp(buffer, name) == 0)
+        {
+            fclose(pAccounts_names);
+            return 0;
+        }
+    }
+    fclose(pAccounts_names);
+
+    return 1;
+}
+//names can't repeat. Then, it searchs in each line to checks if it is a valid name. 
