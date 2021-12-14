@@ -12,16 +12,18 @@
 #include <time.h>
 
 FILE 
-*pWords, 
+*pWords,
+*pTemp_file, 
 *pAccounts_names,
 *pAccounts_passWords,
 *pAccounts_points;
 
 const char 
-wordsF_path[10] = "words.txt", 
-namesF_path[10] = "names.txt",
-pointsF_path[11] = "points.txt",
-passwordsF_path[14] = "passwords.txt";
+wordsF_path[] = "words.txt",
+tempF_path[] = "temp.tmp", 
+namesF_path[] = "names.txt",
+pointsF_path[] = "points.txt",
+passwordsF_path[] = "passwords.txt";
 
 char word[50] = {'\0'}; 
 
@@ -176,8 +178,9 @@ void addA_account()
     printf("\t\t\t\t\tADDING ACCOUNT");
     printf("\n\t\t------------------------------------------------------------\n");
 
-    printf("\nType a UserName to the new Account: "); 
     scanf("%c"); //avoid \n
+
+    printf("\nType a UserName to the new Account: "); 
     fgets(account.name, 25, stdin);
 
     printf("\nType a PassWord: "); 
@@ -333,7 +336,8 @@ int checkAccounts_data()
         return 0;
     }
     //if the first line is empty. It means that it does not have an account yet
-
+    
+    fclose(pAccounts_names);
     return 1;
 }
 //if it returns 1, it means there is data. Else it means that the files were deleted or are empties
@@ -373,7 +377,6 @@ int logIn_anAccount()
 
             fclose(pAccounts_names);
             fclose(pAccounts_passWords);
-            fclose(pAccounts_points);
             return 1;
         }
     }
@@ -500,8 +503,7 @@ void showWrong_letters(char wrongLetters[])
 
 void addPoints_toPlayer(int points) //this function does not work yet
 {
-    FILE *pTemp_file;
-    int lineNum = 0, oldPoints, newPoints, pointsIn_file, i;
+    int lineNum = 0, pointsIn_file = 0, i = 0;
     char nameIn_file[25]; 
     
     pAccounts_names = fopen(namesF_path, "r");
@@ -515,34 +517,30 @@ void addPoints_toPlayer(int points) //this function does not work yet
     fclose(pAccounts_names);
 
     pAccounts_points = fopen(pointsF_path, "r");
-    pTemp_file = fopen("temp.txt", "w");
+    pTemp_file = fopen(tempF_path, "w");
 
-    while(pointsIn_file != EOF)
-    {  
-        i++;
+    while(fscanf(pAccounts_points, "%d", &pointsIn_file) != EOF)
+    {
+        i++; 
 
         if(i == lineNum)
         {
-            oldPoints = getw(pAccounts_points);
-            newPoints = oldPoints + points;
-            putw(newPoints, pTemp_file);
+            printf("\npoints in file: %d", pointsIn_file);
+            fprintf(pTemp_file, "%d\n", pointsIn_file + points);
         }
-        else
+        else if(pointsIn_file != EOF)
         {
-            pointsIn_file = getw(pAccounts_points);
-
-            if(pointsIn_file != EOF)
-                putw(pointsIn_file, pTemp_file);
-        }
-    }
-
+            printf("\npoints in file: %d", pointsIn_file);
+            fprintf(pTemp_file, "%d\n", pointsIn_file);
+        }   
+    } 
+    
     fclose(pAccounts_points);
     fclose(pTemp_file);
 
-    remove(pointsF_path);
-    rename("temp.txt", pointsF_path);
-    //-> bug: both functions dont work
-   
+    printf("\nremove = %d", remove(pointsF_path));
+    printf("\nrename = %d", rename(tempF_path, pointsF_path));
+    //-> bug: both functions dont work   
 }
 
 char isValid_letter(char letter, char rightLetters[], char wrongLetters[])
