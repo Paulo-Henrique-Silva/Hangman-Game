@@ -9,7 +9,7 @@
 #include <ctype.h>
 #include <time.h>
 
-FILE 
+FILE
 *pWords, 
 *pAccounts_names,
 *pAccounts_passWords,
@@ -206,9 +206,9 @@ void howTo_play()
             printf("\n\t\t\t\t|__________");
             printf("\n\n\t\t\t\t_ _ _ _ - _ _ _ _     <- WORD\n");
 
-    printf("\n   -> If you guess correctly, that letter in word it'll be revelead.");
+    printf("\n   -> If you guess correctly, that letter in word will be revelead.");
     printf("\n   -> Else, a part of the hanged's body will be drawed.");
-    printf("\n   -> To win, you need to guess the all letters without let the hanged's draw finish");
+    printf("\n   -> To win, you need to guess the all the letters without let the hanged's draw finish");
 
     printf("\n\n - In this program, you need an ACCOUNT to play. After created, you'll have a score");
     printf("\n - The score is calculated by 6 SUBTRACTED by the number of wrong gueeses that you had in a Match");
@@ -264,7 +264,93 @@ void addA_account()
 
 void deleteA_account()
 {
+    FILE *pTemp_namesFile, *pTemp_passWords_File, *pTemp_pointsFile;
 
+    const char 
+    tempNames_path[] = "tmpNames.tmp", 
+    tempPasswords_path[] = "tmpPasswords.tmp", 
+    tempPoints_path[] = "tmpPoints.tmp";
+
+    char nameIn_line[25], passWord_inLine[25];
+    int pointsIn_line, i = 0, accountNum_toDelete = 0;
+
+    system("cls");
+
+    printf("\t\t\t\t\tDELETE A ACCOUNT");
+    printf("\n\t\t------------------------------------------------------------");
+
+    if(checkAccounts_data()) //checks if the files are ok and there is at least one account
+    {
+        pAccounts_names = fopen(namesF_path, "r"); 
+
+        while(fgets(nameIn_line, 25, pAccounts_names) != NULL)
+        {
+            i++; 
+            nameIn_line[strlen(nameIn_line) - 1] = '\0'; //remove \n in last char
+
+            printf("\n\t\t\t\t\t%d - %s", i, nameIn_line);
+        }
+
+        printf("\n\nType the Account number to delete: ");
+        scanf("%d", &accountNum_toDelete); 
+
+        if(accountNum_toDelete < 1 || accountNum_toDelete > i)
+        {
+            printf("\nInvalid input!");
+            fclose(pAccounts_names); 
+        }
+        else
+        {
+            rewind(pAccounts_names);
+
+            pAccounts_passWords = fopen(passwordsF_path, "r");
+            pAccounts_points = fopen(pointsF_path, "r");
+            pTemp_namesFile = fopen(tempNames_path, "w");
+            pTemp_passWords_File = fopen(tempPasswords_path, "w");
+            pTemp_pointsFile = fopen(tempPoints_path, "w");
+
+            i = 0;
+            while
+            (
+                fgets(nameIn_line, 25, pAccounts_names) != NULL &&
+                fgets(passWord_inLine, 25, pAccounts_passWords) != NULL &&
+                fscanf(pAccounts_points, "%d", &pointsIn_line) != EOF
+            )
+            {
+                i++;
+
+                if(i != accountNum_toDelete)
+                {
+                    fprintf(pTemp_namesFile, "%s", nameIn_line);
+                    fprintf(pTemp_passWords_File, "%s", passWord_inLine);
+                    fprintf(pTemp_pointsFile, "%d\n", pointsIn_line);
+                }
+            }
+            //copy the old content from files and paste in new files
+            //except from the account that user wants to delete
+
+            fclose(pAccounts_names); 
+            fclose(pAccounts_passWords); 
+            fclose(pAccounts_points); 
+            fclose(pTemp_namesFile); 
+            fclose(pTemp_passWords_File); 
+            fclose(pTemp_pointsFile); 
+
+            remove(namesF_path);
+            remove(passwordsF_path);
+            remove(pointsF_path);
+            //remove the old files
+
+            rename(tempNames_path, namesF_path);
+            rename(tempPasswords_path, passwordsF_path);
+            rename(tempPoints_path, pointsF_path);
+            //rename the new files without the deleted account
+
+            printf("\nAccount Successfully Removed from the Program!"); 
+        }
+    }
+    else 
+        printf("\nSorry, it was not possible to find An Account. :/");
 }
 
 void showAccounts()
@@ -380,29 +466,38 @@ void deleteA_word()
 
     printf("\nType the Number to delete: ");
     scanf("%d", &wordTo_deleteNum);
-    rewind(pWords); //go back to begging of file
 
-    i = 0;
-    pTemp_file = fopen(tempF_path, "w");
-
-    while(fgets(wordIn_file, 50, pWords) != NULL) 
-    {
-        i++;
-
-        if(i != wordTo_deleteNum)
-            fprintf(pTemp_file, "%s", wordIn_file);
+    if(wordTo_deleteNum < 1 || wordTo_deleteNum > i)
+    {   
+        printf("\nInvalid Input!");
+        fclose(pWords); 
     }
-    //copy the content of first file and paste in a temp file.
-    //except for the word that the user wants to delete. 
+    else
+    {
+        rewind(pWords); //go back to begging of file
 
-    fclose(pWords); 
-    fclose(pTemp_file);
+        i = 0;
+        pTemp_file = fopen(tempF_path, "w");
 
-    remove(wordsF_path);
-    rename(tempF_path, wordsF_path);
-    //remove the old list and rename the new one without that word
+        while(fgets(wordIn_file, 50, pWords) != NULL) 
+        {
+            i++;
 
-    printf("\nWord Successfully Removed from word list!");
+            if(i != wordTo_deleteNum)
+                fprintf(pTemp_file, "%s", wordIn_file);
+        }
+        //copy the content of first file and paste in a temp file.
+        //except for the word that the user wants to delete. 
+
+        fclose(pWords); 
+        fclose(pTemp_file);
+
+        remove(wordsF_path);
+        rename(tempF_path, wordsF_path);
+        //remove the old list and rename the new one without that word
+
+        printf("\nWord Successfully Removed from word list!");
+    }
 }
 
 void seeWord_list()
