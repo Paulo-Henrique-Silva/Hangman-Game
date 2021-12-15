@@ -35,10 +35,11 @@ struct player account;
 enum menu {play = 1, howToplay, addAccount, seeAccounts, addWord, seeWords, exitGame};
 
 void playGame();
-void addA_word();
-void seeWord_list();
+void howTo_play();
 void addA_account(); 
 void showAccounts(); 
+void addA_word();
+void seeWord_list();
 //game options
 
 void chooseA_randomWord();
@@ -84,6 +85,7 @@ int main()
                 playGame();
                 break;
             case howToplay:
+                howTo_play();
                 break;
             case addAccount:
                 addA_account();
@@ -172,6 +174,37 @@ void playGame()
         
         printf("\nAnswer = %s", word);
     }
+}
+
+void howTo_play()
+{
+    system("cls");
+
+    printf("\t\t\t\t\tHOW TO PLAY");
+    printf("\n\t\t------------------------------------------------------------\n");
+
+    printf("\n - Hangman Game is a popular game that the main objetive is avoid that a hanged guy dies.");
+    printf("\n - To save him you need to guess a word, letter by letter.\n");
+
+            printf("\n\t\t\t\t|--------|");
+            printf("\n\t\t\t\t|        O");
+            printf("\n\t\t\t\t|       /|\\        <- HANGED");
+            printf("\n\t\t\t\t|       / \\");
+            printf("\n\t\t\t\t|           ");
+            printf("\n\t\t\t\t|__________");
+            printf("\n\n\t\t\t\t_ _ _ _ - _ _ _ _     <- WORD\n");
+
+    printf("\n   -> If you guess correctly, that letter in word it'll be revelead.");
+    printf("\n   -> Else, a part of the hanged's body will be drawed.");
+    printf("\n   -> To win, you need to guess the all letters without let the hanged's draw finish");
+
+    printf("\n\n - In this program, you need an ACCOUNT to play. After created, you'll have a score");
+    printf("\n - The score is calculated by 6 SUBTRACTED by the number of wrong gueeses that you had in a Match");
+    printf("\n   -> Example: If you wrongly guessed 4 times, you have now 2 points");
+    printf("\n   -> If you didn't wrongly guessed anytime, you get 6 points");
+
+    printf("\n\n - In addition, the program have a few words by default, but you can add your own words later.");
+    printf("\n\nCreate accounts, words and Play :)");
 }
 
 void addA_account()
@@ -286,7 +319,7 @@ void addA_word()
     system("cls");
     printf("\t\t\t\t\tADDING A WORD");
     printf("\n\t\t------------------------------------------------------------\n");
-    
+
     scanf("%c"); //avoid \n
 
     if(numOf_words() < 50)
