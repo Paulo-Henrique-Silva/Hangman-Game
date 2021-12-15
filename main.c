@@ -55,7 +55,9 @@ char isValid_letter(char letter, char rightLetters[], char wrongLetters[]);
 
 int isThere_theLetter(char letter);
 int isVictory(char rightLetters[]);
+int numOf_words();
 int isA_validWord(char typedWord[]);
+int numOf_accounts(); 
 int isA_validName(char name[]); 
 
 int main()
@@ -180,33 +182,39 @@ void addA_account()
 
     scanf("%c"); //avoid extra \n
 
-    printf("\nType a UserName to the new Account: "); 
-    fgets(account.name, 25, stdin);
-
-    printf("\nType a PassWord: "); 
-    fgets(account.password, 25, stdin);
-
     checkAccounts_data(); 
     //how it's adding an account, there is not need to block if the files were deleted or empty
 
-    if(isA_validName(account.name))
+    if(numOf_accounts() < 10)
     {
-        pAccounts_names = fopen(namesF_path, "a");
-        pAccounts_passWords = fopen(passwordsF_path, "a");
-        pAccounts_points = fopen(pointsF_path, "a");
+        printf("\nType a UserName to the new Account: "); 
+        fgets(account.name, 25, stdin);
 
-        fputs(account.name, pAccounts_names);
-        fputs(account.password, pAccounts_passWords);
-        fprintf(pAccounts_points, "%d\n", 0);
+        printf("\nType a PassWord: "); 
+        fgets(account.password, 25, stdin);
 
-        fclose(pAccounts_names);
-        fclose(pAccounts_passWords);
-        fclose(pAccounts_points);
-        
-        printf("\nNew Account Sucessfully Added!");
+
+        if(isA_validName(account.name))
+        {
+            pAccounts_names = fopen(namesF_path, "a");
+            pAccounts_passWords = fopen(passwordsF_path, "a");
+            pAccounts_points = fopen(pointsF_path, "a");
+
+            fputs(account.name, pAccounts_names);
+            fputs(account.password, pAccounts_passWords);
+            fprintf(pAccounts_points, "%d\n", 0);
+
+            fclose(pAccounts_names);
+            fclose(pAccounts_passWords);
+            fclose(pAccounts_points);
+            
+            printf("\nNew Account Sucessfully Added!");
+        }
+        else
+            printf("\nInvalid Input. There is an account with this name already!");
     }
     else
-        printf("\nInvalid Input. There is an account with this name already!");
+        printf("\nSorry :/, limit of Accounts reached! (10)");
 }
 
 void showAccounts()
@@ -247,12 +255,19 @@ void showAccounts()
                 strcpy(bestPlayer, nameIn_file);
                 bestScore = pointsIn_file; 
             }
+
+            if(pointsIn_file == bestScore && strcmp(nameIn_file, bestPlayer) != 0)
+                bestScore = 0;
+            //calculates the best player and checks if there's a tie
         }
 
         fclose(pAccounts_names);
         fclose(pAccounts_points);
 
-        printf("\n\nBest Player: '%s' - Score: %d", bestPlayer, bestScore);
+        if(bestScore == 0)
+            printf("\n\nBest Player: -");
+        else
+            printf("\n\nBest Player: '%s' - Score: %d", bestPlayer, bestScore);
     }
     else
     {
@@ -271,19 +286,25 @@ void addA_word()
     system("cls");
     printf("\t\t\t\t\tADDING A WORD");
     printf("\n\t\t------------------------------------------------------------\n");
-
-    printf("\nType a new Word: ");
+    
     scanf("%c"); //avoid \n
-    fgets(newWord, 50, stdin);
 
-    if(isA_validWord(newWord))
+    if(numOf_words() < 50)
     {
-        pWords = fopen(wordsF_path, "a");
-        fputs(newWord, pWords);
-        fclose(pWords); 
+        printf("\nType a new Word: ");
+        fgets(newWord, 50, stdin);
 
-        printf("\nThe new Word was Successfully added!");
+        if(isA_validWord(newWord))
+        {
+            pWords = fopen(wordsF_path, "a");
+            fputs(newWord, pWords);
+            fclose(pWords); 
+
+            printf("\nThe new Word was Successfully added!");
+        }
     }
+    else
+        printf("\nSorry :/, limit of words reached! (50)");
 }
 
 void seeWord_list()
@@ -661,6 +682,19 @@ int isVictory(char rightLetters[])
     return 1;
 }
 
+int numOf_words()
+{
+    char buffer[50]; 
+    int amountOf_words = 0;
+
+    pWords = fopen(wordsF_path, "r");
+    while(fgets(buffer, 50, pWords) != NULL)
+        amountOf_words++;
+    fclose(pWords);
+
+    return amountOf_words++;
+}
+
 int isThere_theLetter(char letter)
 {
     for(int i = 0; i < strlen(word); i++)
@@ -703,12 +737,26 @@ int isA_validWord(char typedWord[])
     return 1; //if any case matches, it means that word is valid and returns TRUE
 } 
 
+int numOf_accounts()
+{
+    char buffer[25];
+    int numOf_accounts = 0;
+
+    pAccounts_names = fopen(namesF_path, "r");
+    while(fgets(buffer, 25, pAccounts_names) != NULL)
+        numOf_accounts++;
+    fclose(pAccounts_names);
+    //calculates the amount of lines(players)
+
+    return numOf_accounts; 
+}
+
 int isA_validName(char name[])
 {
     char buffer[25];
 
     pAccounts_names = fopen(namesF_path, "r");
-    while(fgets(buffer, 50, pAccounts_names) != NULL)
+    while(fgets(buffer, 25, pAccounts_names) != NULL)
     {
         if(strcmp(buffer, name) == 0)
         {
