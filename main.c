@@ -10,15 +10,13 @@
 #include <time.h>
 
 FILE 
-*pWords,
-*pTemp_file, 
+*pWords, 
 *pAccounts_names,
 *pAccounts_passWords,
 *pAccounts_points;
 
 const char 
-wordsF_path[] = "words.txt",
-tempF_path[] = "temp.tmp", 
+wordsF_path[] = "words.txt", 
 namesF_path[] = "names.txt",
 pointsF_path[] = "points.txt",
 passwordsF_path[] = "passwords.txt";
@@ -32,13 +30,19 @@ struct player
 
 struct player account;
 
-enum menu {play = 1, howToplay, addAccount, seeAccounts, addWord, seeWords, exitGame};
+enum menu 
+{
+    play = 1, howToplay, addAccount, deleteAccounts, seeAccounts, 
+    addWord, deleteWord, seeWords, exitGame
+};
 
 void playGame();
 void howTo_play();
 void addA_account(); 
+void deleteA_account();
 void showAccounts(); 
 void addA_word();
+void deleteA_word();
 void seeWord_list();
 //game options
 
@@ -71,11 +75,13 @@ int main()
         printf("\t\t\t\tHANGMAN GAME\n");
         printf("\n\t\t\t\t[1] - Play Game");
         printf("\n\t\t\t\t[2] - How To Play");
-        printf("\n\t\t\t\t[3] - Add an account");
-        printf("\n\t\t\t\t[4] - Show Accounts");
-        printf("\n\t\t\t\t[5] - Add a Word");
-        printf("\n\t\t\t\t[6] - Show Word List");
-        printf("\n\t\t\t\t[7] - Exit");
+        printf("\n\t\t\t\t[3] - Add an Account");
+        printf("\n\t\t\t\t[4] - Delete an Account");
+        printf("\n\t\t\t\t[5] - Show Accounts");
+        printf("\n\t\t\t\t[6] - Add a Word");
+        printf("\n\t\t\t\t[7] - Delete a Word");
+        printf("\n\t\t\t\t[8] - Show Word List");
+        printf("\n\t\t\t\t[9] - Exit");
         printf("\n\nType your operation: ");
         scanf("%d", &operation); 
 
@@ -90,11 +96,17 @@ int main()
             case addAccount:
                 addA_account();
                 break;
+            case deleteAccounts:
+                deleteA_account();
+                break;
             case seeAccounts:
                 showAccounts();
                 break;
             case addWord:
                 addA_word();
+                break;
+            case deleteWord:
+                deleteA_word();
                 break;
             case seeWords: 
                 seeWord_list();
@@ -250,6 +262,11 @@ void addA_account()
         printf("\nSorry :/, limit of Accounts reached! (10)");
 }
 
+void deleteA_account()
+{
+
+}
+
 void showAccounts()
 {
     char nameIn_file[25], bestPlayer[25];
@@ -340,9 +357,57 @@ void addA_word()
         printf("\nSorry :/, limit of words reached! (50)");
 }
 
+void deleteA_word()
+{
+    FILE *pTemp_file;
+    const char tempF_path[] = "temp.tmp";
+
+    char wordIn_file[50]; 
+    int i = 0, wordTo_deleteNum;
+
+    checkWords_data();
+
+    system("cls");
+    printf("\t\t\t\t\tDELETE A WORD");
+    printf("\n\t\t------------------------------------------------------------\n");
+
+    pWords = fopen(wordsF_path, "r");
+    while(fgets(wordIn_file, 50, pWords) != NULL) 
+    {
+        i++;
+        printf("\t\t\t\t%d - %s", i, wordIn_file);
+    }
+
+    printf("\nType the Number to delete: ");
+    scanf("%d", &wordTo_deleteNum);
+    rewind(pWords); //go back to begging of file
+
+    i = 0;
+    pTemp_file = fopen(tempF_path, "w");
+
+    while(fgets(wordIn_file, 50, pWords) != NULL) 
+    {
+        i++;
+
+        if(i != wordTo_deleteNum)
+            fprintf(pTemp_file, "%s", wordIn_file);
+    }
+    //copy the content of first file and paste in a temp file.
+    //except for the word that the user wants to delete. 
+
+    fclose(pWords); 
+    fclose(pTemp_file);
+
+    remove(wordsF_path);
+    rename(tempF_path, wordsF_path);
+    //remove the old list and rename the new one without that word
+
+    printf("\nWord Successfully Removed from word list!");
+}
+
 void seeWord_list()
 {
-    char wordIn_file[50]; //this will get the line
+    char wordIn_file[50]; 
     int i = 0;
 
     checkWords_data();
@@ -625,6 +690,9 @@ void showWrong_letters(char wrongLetters[])
 
 void addPoints_toPlayer(int points) 
 {
+    FILE *pTemp_file;
+    const char tempF_path[] = "temp.tmp";
+
     int lineNum = 0, pointsIn_file = 0, i = 0;
     char nameIn_file[25]; 
 
